@@ -4,10 +4,25 @@
 #include "filemanager.h"
 
 using namespace std;
+namespace fs = std::filesystem;
 
 // Constructor
-FileManager::FileManager(const string& booksFile, const string& usersFile)
-    : booksFileName(booksFile), usersFileName(usersFile) {}
+FileManager::FileManager(const string& booksFile, const string& usersFile) {
+    // Automatically detect correct data folder
+    if (fs::exists("../data/books.txt")) {
+        booksFileName = "../data/books.txt";
+        usersFileName = "../data/users.txt";
+    } 
+    else if (fs::exists("data/books.txt")) {
+        booksFileName = "data/books.txt";
+        usersFileName = "data/users.txt";
+    } 
+    else {
+        // fallback if data folder not found
+        booksFileName = "books.txt";
+        usersFileName = "users.txt";
+    }
+}
 
 // Save all library data
 bool FileManager::saveLibraryData(Library& library) {
@@ -111,13 +126,17 @@ bool FileManager::fileExists(const string& filename) {
 
 // Create backup
 void FileManager::createBackup() {
-    if (fileExists(booksFileName)) {
-        filesystem::copy_file(booksFileName, booksFileName + ".backup");
+    try {
+        if (fileExists(booksFileName)) {
+            filesystem::copy_file(booksFileName, booksFileName + ".backup", filesystem::copy_options::overwrite_existing);
+        }
+        
+        if (fileExists(usersFileName)) {
+            filesystem::copy_file(usersFileName, usersFileName + ".backup", filesystem::copy_options::overwrite_existing);
+        }
+        
+        cout << "Fichiers de sauvegarde créés.\n";
+    } catch (const filesystem::filesystem_error& e) {
+        cerr << "Erreur lors de la création de la sauvegarde : " << e.what() << "\n";
     }
-    
-    if (fileExists(usersFileName)) {
-        filesystem::copy_file(usersFileName, usersFileName + ".backup");
-    }
-    
-    cout << "Fichiers de sauvegarde créés.\n";
 }
