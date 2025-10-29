@@ -38,6 +38,7 @@ Book* Library::findBookByISBN(const string& isbn) {
 }
 
 // Search books by title (case-insensitive partial match)
+// Ajout du tri par titre pour un affichage plus organisé
 vector<Book*> Library::searchBooksByTitle(const string& title) {
     vector<Book*> results;
     string lowerTitle = title;
@@ -51,10 +52,17 @@ vector<Book*> Library::searchBooksByTitle(const string& title) {
             results.push_back(book.get());
         }
     }
+
+    // 🔹 Tri des résultats par ordre alphabétique du titre
+    sort(results.begin(), results.end(), [](Book* a, Book* b) {
+        return a->getTitle() < b->getTitle();
+    });
+
     return results;
 }
 
 // Search books by author (case-insensitive partial match)
+// Ajout du tri par auteur pour une recherche plus claire
 vector<Book*> Library::searchBooksByAuthor(const string& author) {
     vector<Book*> results;
     string lowerAuthor = author;
@@ -68,10 +76,17 @@ vector<Book*> Library::searchBooksByAuthor(const string& author) {
             results.push_back(book.get());
         }
     }
+
+    // 🔹 Tri des résultats par ordre alphabétique de l’auteur
+    sort(results.begin(), results.end(), [](Book* a, Book* b) {
+        return a->getAuthor() < b->getAuthor();
+    });
+
     return results;
 }
 
 // Get all available books
+// Ajout du tri par titre/auteur pour un affichage propre
 vector<Book*> Library::getAvailableBooks() {
     vector<Book*> available;
     for (auto& book : books) {
@@ -79,15 +94,32 @@ vector<Book*> Library::getAvailableBooks() {
             available.push_back(book.get());
         }
     }
+
+    // 🔹 Tri des livres disponibles par titre puis par auteur
+    sort(available.begin(), available.end(), [](Book* a, Book* b) {
+        if (a->getTitle() == b->getTitle())
+            return a->getAuthor() < b->getAuthor();
+        return a->getTitle() < b->getTitle();
+    });
+
     return available;
 }
 
 // Get all books
+// Ajout du tri global pour toujours afficher les livres dans un ordre logique
 vector<Book*> Library::getAllBooks() {
     vector<Book*> allBooks;
     for (auto& book : books) {
         allBooks.push_back(book.get());
     }
+
+    // 🔹 Tri de tous les livres par titre puis auteur
+    sort(allBooks.begin(), allBooks.end(), [](Book* a, Book* b) {
+        if (a->getTitle() == b->getTitle())
+            return a->getAuthor() < b->getAuthor();
+        return a->getTitle() < b->getTitle();
+    });
+
     return allBooks;
 }
 
@@ -107,11 +139,18 @@ User* Library::findUserById(const string& userId) {
 }
 
 // Get all users
+// Ajout du tri alphabetique des utilisateurs par nom
 vector<User*> Library::getAllUsers() {
     vector<User*> allUsers;
     for (auto& user : users) {
         allUsers.push_back(user.get());
     }
+
+    // Tri des users par ordre alphabétique du nom
+    sort(allUsers.begin(), allUsers.end(), [](User* a, User* b) {
+        return a->getName() < b->getName();
+    });
+
     return allUsers;
 }
 
@@ -148,29 +187,31 @@ bool Library::returnBook(const string& isbn) {
 
 // Display all books
 void Library::displayAllBooks() {
-    if (books.empty()) {
+    auto allBooks = getAllBooks(); // maintenant déjà triés
+
+    if (allBooks.empty()) {
         cout << "Aucun livre dans la bibliothèque.\n";
         return;
     }
     
-    cout << "\n=== TOUS LES LIVRES ===\n";
-    for (size_t i = 0; i < books.size(); ++i) {
+    cout << "\n=== TOUS LES LIVRES (TRIÉS PAR TITRE/AUTEUR) ===\n";
+    for (size_t i = 0; i < allBooks.size(); ++i) {
         cout << "\nLivre " << (i + 1) << " :\n";
-        cout << books[i]->toString() << "\n";
+        cout << allBooks[i]->toString() << "\n";
         cout << "-------------------------\n";
     }
 }
 
 // Display available books
 void Library::displayAvailableBooks() {
-    auto available = getAvailableBooks();
+    auto available = getAvailableBooks(); // maintenant triés aussi
     
     if (available.empty()) {
         cout << "Aucun livre disponible pour emprunt.\n";
         return;
     }
     
-    cout << "\n=== LIVRES DISPONIBLES ===\n";
+    cout << "\n=== LIVRES DISPONIBLES (TRIÉS PAR TITRE/AUTEUR) ===\n";
     for (size_t i = 0; i < available.size(); ++i) {
         cout << "\nLivre " << (i + 1) << " :\n";
         cout << available[i]->toString() << "\n";
@@ -180,15 +221,17 @@ void Library::displayAvailableBooks() {
 
 // Display all users
 void Library::displayAllUsers() {
-    if (users.empty()) {
+    auto allUsers = getAllUsers(); // triés par nom
+    
+    if (allUsers.empty()) {
         cout << "Aucun utilisateur enregistré.\n";
         return;
     }
     
-    cout << "\n=== TOUS LES UTILISATEURS ===\n";
-    for (size_t i = 0; i < users.size(); ++i) {
+    cout << "\n=== TOUS LES UTILISATEURS (TRIÉS PAR NOM) ===\n";
+    for (size_t i = 0; i < allUsers.size(); ++i) {
         cout << "\nUtilisateur " << (i + 1) << " :\n";
-        cout << users[i]->toString() << "\n";
+        cout << allUsers[i]->toString() << "\n";
         cout << "------------------------------\n";
     }
 }
